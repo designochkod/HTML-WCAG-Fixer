@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WCAG HTML-optimerare</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-hover: #334155;
+  --border: #334155;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #38bdf8;
+  --primary-hover: #0284c7;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --hl-tag: #f472b6;
+  --hl-attr: #38bdf8;
+  --hl-val: #a7f3d0;
+  --hl-punct: #64748b;
+  --hl-comm: #64748b;
+  --radius: 12px;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+header {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto 2rem auto;
+
+  & h1 {
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+  }
+
+  & p {
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+}
+
+main {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+
+  & .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  & button, & .file-label {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+      background: var(--surface-hover);
+      border-color: var(--text-muted);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+
+  & button.primary {
+    background: var(--primary);
+    color: #0f172a;
+    border-color: var(--primary);
+
+    &:hover {
+      background: var(--primary-hover);
+      color: var(--text);
+    }
+  }
+
+  & input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  flex: 1;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  & .panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+
+    & .panel-header {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.4);
+
+      & label, & span.title {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      & .badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        background: var(--bg);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+    }
+
+    & .code-wrapper {
+      position: relative;
+      flex: 1;
+      min-height: 360px;
+      display: grid;
+
+      & textarea, & pre {
+        grid-area: 1 / 1;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 1.25rem;
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        letter-spacing: normal;
+        tab-size: 2;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        border: none;
+        overflow: auto;
+      }
+
+      & pre {
+        pointer-events: none;
+        color: var(--text);
+        z-index: 1;
+
+        & .hl-tag {
+          color: var(--hl-tag);
+        }
+
+        & .hl-attr {
+          color: var(--hl-attr);
+        }
+
+        & .hl-val {
+          color: var(--hl-val);
+        }
+
+        & .hl-punct {
+          color: var(--hl-punct);
+        }
+
+        & .hl-comm {
+          color: var(--hl-comm);
+          font-style: italic;
+        }
+      }
+
+      & textarea {
+        background: transparent;
+        color: transparent;
+        caret-color: var(--text);
+        resize: none;
+        z-index: 2;
+
+        &::selection {
+          background: rgba(56, 189, 248, 0.3);
+          color: transparent;
+        }
+
+        &:focus {
+          outline: none;
+          box-shadow: inset 0 0 0 2px var(--primary);
+        }
+
+        &::placeholder {
+          color: var(--text-muted);
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+}
+
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.log-panel, .preview-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+
+  & h2 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+}
+
+.log-panel {
+  & ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    max-height: 300px;
+    overflow-y: auto;
+
+    & li::before {
+      content: "✓ ";
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    & li.warning::before {
+      content: "⚠ ";
+      color: var(--warning);
+    }
+  }
+}
+
+.preview-panel {
+  & iframe {
+    width: 100%;
+    min-height: 260px;
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary);
+  color: #000;
+  padding: 8px;
+  z-index: 100;
+  font-weight: bold;
+
+  &:focus {
+    top: 0;
+  }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Gå till huvudinnehållet</a>
+
+<header>
+<h1>WCAG HTML-optimerare</h1>
+<p>Klistra in eller ladda upp HTML för att automatiskt komplettera tillgänglighetsattribut, kontrollera rubrikhierarki och formatera koden.</p>
+</header>
+
+<main id="main">
+<section class="controls" aria-label="Verktygsfält">
+  <div class="btn-group">
+    <label class="file-label" tabindex="0">
+      Ladda upp HTML-fil
+      <input type="file" id="fileInput" accept=".html,.htm,.txt">
+    </label>
+    <button type="button" id="sampleBtn">Ladda exempel</button>
+    <button type="button" id="clearBtn">Rensa</button>
+  </div>
+  <div class="btn-group">
+    <button type="button" id="processBtn" class="primary">Optimera & Formatera</button>
+    <button type="button" id="copyBtn">Kopiera resultat</button>
+    <button type="button" id="downloadBtn">Ladda ner .html</button>
+  </div>
+</section>
+
+<section class="editor-grid" aria-label="Kodredigerare">
+  <div class="panel">
+    <div class="panel-header">
+      <label for="inputHtml">Ursprunglig HTML</label>
+      <span class="badge">Input</span>
+    </div>
+    <div class="code-wrapper">
+      <pre id="inputHighlight" aria-hidden="true"><code></code></pre>
+      <textarea id="inputHtml" spellcheck="false" placeholder="Klistra in din HTML-kod här..."></textarea>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <label for="outputHtml">WCAG-anpassad HTML</label>
+      <span class="badge" id="statusBadge">Redo</span>
+    </div>
+    <div class="code-wrapper">
+      <pre id="outputHighlight" aria-hidden="true"><code></code></pre>
+      <textarea id="outputHtml" readonly spellcheck="false" placeholder="Resultatet visas här..."></textarea>
+    </div>
+  </div>
+</section>
+
+<section class="bottom-grid" aria-label="Resultat och förhandsgranskning">
+  <div class="log-panel" aria-live="polite">
+    <h2>Utförda åtgärder & kontroller</h2>
+    <ul id="changelog">
+      <li>Väntar på HTML-kod att analysera...</li>
+    </ul>
+  </div>
+
+  <div class="preview-panel">
+    <h2>Förhandsgranskning (Sandlåda)</h2>
+    <iframe id="previewFrame" title="Förhandsgranskning av optimerad HTML" sandbox=""></iframe>
+  </div>
+</section>
+</main>
+
+<script>
+    const inputEl = document.getElementById('inputHtml');
+    const outputEl = document.getElementById('outputHtml');
+    const inputPre = document.getElementById('inputHighlight');
+    const outputPre = document.getElementById('outputHighlight');
+    const inputCode = inputPre.querySelector('code');
+    const outputCode = outputPre.querySelector('code');
+    const changelogEl = document.getElementById('changelog');
+    const statusBadge = document.getElementById('statusBadge');
+    const fileInput = document.getElementById('fileInput');
+    const previewFrame = document.getElementById('previewFrame');
+
+    const debounce = (fn, delay = 250) => {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    const highlightHTML = (code) => {
+      if (!code) return '';
+      const escaped = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      return escaped
+        .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="hl-comm">$1</span>')
+        .replace(/(&lt;\/?)([a-zA-Z0-9-]+)([\s\S]*?)(\/?&gt;)/g, (match, open, tag, attrs, close) => {
+          const highlightedAttrs = attrs.replace(
+            /([a-zA-Z0-9:-]+)(=)("[^"]*"|'[^']*')/g,
+            '<span class="hl-attr">$1</span><span class="hl-punct">$2</span><span class="hl-val">$3</span>'
+          );
+          return `<span class="hl-punct">${open}</span><span class="hl-tag">${tag}</span>${highlightedAttrs}<span class="hl-punct">${close}</span>`;
+        });
+    };
+
+    const syncHighlight = (textarea, pre, codeEl) => {
+      const value = textarea.value;
+      codeEl.innerHTML = highlightHTML(value) + (value.endsWith('\n') ? ' ' : '');
+      pre.scrollTop = textarea.scrollTop;
+      pre.scrollLeft = textarea.scrollLeft;
+    };
+
+    const sampleHTML = `<!DOCTYPE html>
+<html>
+<head>
+<title>Exempelsida</title>
+</head>
+<body>
+<header>
+<nav>
+<ul>
+<li><a href="/">Start</a></li>
+<li><a href="/kontakt"></a></li>
+</ul>
+</nav>
+</header>
+<main>
+<h1>Välkommen</h1>
+<h3>Hoppad rubriknivå</h3>
+<img src="banner.jpg">
+<div onclick="doSomething()">Klickbar yta</div>
+<form>
+<input type="text" name="email" placeholder="E-postadress">
+<button><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+</form>
+<table>
+<tr><td>Data 1</td><td>Data 2</td></tr>
+</table>
+</main>
+</body>
+</html>`;
+
+    const voidElements = new Set([
+      'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+      'link', 'meta', 'param', 'source', 'track', 'wbr'
+    ]);
+
+    const formatNode = (node, level = 0) => {
+      const indent = '  '.repeat(level);
+
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent.trim();
+        return text ? `${indent}${text}\n` : '';
+      }
+
+      if (node.nodeType === Node.COMMENT_NODE) {
+        return `${indent}<!-- ${node.textContent.trim()} -->\n`;
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return '';
+      }
+
+      const tag = node.tagName.toLowerCase();
+      const attrs = Array.from(node.attributes)
+        .map(attr => attr.value === '' && attr.name !== 'alt' ? attr.name : `${attr.name}="${attr.value.replace(/"/g, '&quot;')}"`)
+        .join(' ');
+
+      const openTag = attrs ? `<${tag} ${attrs} >` : `<${tag}>`;
+
+      if (voidElements.has(tag)) {
+        return `${indent}${openTag}\n`;
+      }
+
+      const children = Array.from(node.childNodes);
+      if (children.length === 0) {
+        return `${indent}${openTag}</${tag}>\n`;
+      }
+
+      if (children.length === 1 && children.nodeType === Node.TEXT_NODE) {
+        const text = children.textContent.trim();
+        return `${indent}${openTag}${text}</${tag}>\n`;
+      }
+
+      let inner = '';
+      for (const child of children) {
+        inner += formatNode(child, level + 1);
+      }
+
+      return `${indent}${openTag}\n${inner}${indent}</${tag}>\n`;
+    };
+
+    const optimizeWCAG = (rawHtml) => {
+      const logs = [];
+      const addLog = (text, type = 'success') => logs.push({ text, type });
+      const isFullDocument = /<html[\s>]/i.test(rawHtml) || /<!doctype/i.test(rawHtml);
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(rawHtml, 'text/html');
+
+      if (!doc.documentElement.hasAttribute('lang')) {
+        doc.documentElement.setAttribute('lang', 'sv');
+        addLog('Lade till lang="sv" på <html>');
+      }
+
+      if (!doc.querySelector('meta[name="viewport"]')) {
+        const meta = doc.createElement('meta');
+        meta.setAttribute('name', 'viewport');
+        meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        doc.head.appendChild(meta);
+        addLog('Lade till responsiv viewport-meta i <head>');
+      }
+
+      const mainEl = doc.querySelector('main');
+      if (mainEl) {
+        if (!mainEl.id) {
+          mainEl.id = 'main';
+          addLog('Lade till id="main" på <main>');
+        }
+        if (!doc.querySelector('.skip-link')) {
+          const skipLink = doc.createElement('a');
+          skipLink.className = 'skip-link';
+          skipLink.setAttribute('href', `#${mainEl.id}`);
+          skipLink.textContent = 'Gå till huvudinnehållet';
+          doc.body.insertBefore(skipLink, doc.body.firstChild);
+          addLog('Infogade skip-link överst i <body>');
+        }
+      }
+
+      const headings = Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+      if (headings.length > 0) {
+        const h1Count = headings.filter(h => h.tagName === 'H1').length;
+        if (h1Count === 0) {
+          addLog('Rubrikhierarki: Dokumentet saknar en huvudrubrik (<h1>)', 'warning');
+        } else if (h1Count > 1) {
+          addLog(`Rubrikhierarki: Hittade ${h1Count} st <h1> (rekommenderat är endast en per sida)`, 'warning');
+        }
+
+        let prevLevel = 0;
+        headings.forEach((h) => {
+          const currentLevel = parseInt(h.tagName.substring(1), 10);
+          if (prevLevel > 0 && currentLevel > prevLevel + 1) {
+            addLog(`Rubrikhierarki: Hoppade från <h${prevLevel}> direkt till <h${currentLevel}> ("${h.textContent.trim().slice(0, 25)}")`, 'warning');
+          }
+          prevLevel = currentLevel;
+        });
+      }
+
+      doc.querySelectorAll('header').forEach((el, index) => {
+        if (!el.closest('article, aside, main, nav, section') && !el.hasAttribute('role')) {
+          el.setAttribute('role', 'banner');
+          addLog(`Lade till role="banner" på sidhuvud (<header>) #${index + 1}`);
+        }
+      });
+
+      doc.querySelectorAll('footer').forEach((el, index) => {
+        if (!el.closest('article, aside, main, nav, section') && !el.hasAttribute('role')) {
+          el.setAttribute('role', 'contentinfo');
+          addLog(`Lade till role="contentinfo" på sidfot (<footer>) #${index + 1}`);
+        }
+      });
+
+      doc.querySelectorAll('aside').forEach((el, index) => {
+        if (!el.hasAttribute('role')) {
+          el.setAttribute('role', 'complementary');
+          addLog(`Lade till role="complementary" på <aside> #${index + 1}`);
+        }
+      });
+
+      doc.querySelectorAll('[onclick]:not(button):not(a):not(input):not(select):not(textarea)').forEach((el, index) => {
+        if (!el.hasAttribute('role')) {
+          el.setAttribute('role', 'button');
+          addLog(`Lade till role="button" på klickbart <${el.tagName.toLowerCase()}>-element #${index + 1}`);
+        }
+        if (!el.hasAttribute('tabindex')) {
+          el.setAttribute('tabindex', '0');
+          addLog(`Lade till tabindex="0" för tangentbordsfokus på klickbart element #${index + 1}`);
+        }
+      });
+      doc.querySelectorAll('img').forEach((img, index) => {
+        if (!img.hasAttribute('alt')) {
+          img.setAttribute('alt', '');
+          addLog(`Lade till tomt alt-attribut (alt="") på bild #${index + 1}`);
+        }
+      });
+
+      doc.querySelectorAll('svg, i[class*="icon"], i[class*="fa-"]').forEach((icon) => {
+        const hasLabel = icon.hasAttribute('aria-label') || icon.hasAttribute('aria-labelledby') || icon.querySelector('title');
+        if (!hasLabel && !icon.hasAttribute('aria-hidden')) {
+          icon.setAttribute('aria-hidden', 'true');
+          addLog(`Dold dekorativ ikon (<${icon.tagName.toLowerCase()}>) med aria-hidden="true"`);
+        }
+      });
+
+      doc.querySelectorAll('button').forEach((btn, index) => {
+        if (!btn.hasAttribute('type')) {
+          btn.setAttribute('type', 'button');
+          addLog(`Satte type="button" på knapp #${index + 1}`);
+        }
+        const text = btn.textContent.trim();
+        const hasLabel = btn.hasAttribute('aria-label') || btn.hasAttribute('aria-labelledby');
+        if (!text && !hasLabel) {
+          btn.setAttribute('aria-label', `Åtgärdsknapp ${index + 1}`);
+          addLog(`Lade till beskrivande aria-label på tom knapp #${index + 1}`);
+        }
+      });
+
+      doc.querySelectorAll('a').forEach((link, index) => {
+        const text = link.textContent.trim();
+        const hasLabel = link.hasAttribute('aria-label') || link.hasAttribute('aria-labelledby');
+        const imgWithAlt = link.querySelector('img[alt]:not([alt=""])');
+        if (!text && !hasLabel && !imgWithAlt) {
+          const href = link.getAttribute('href') || 'länk';
+          link.setAttribute('aria-label', `Gå till ${href}`);
+          addLog(`Lade till aria-label på tom länk #${index + 1}`);
+        }
+        if (link.getAttribute('target') === '_blank') {
+          const rel = link.getAttribute('rel') || '';
+          if (!rel.includes('noopener')) {
+            link.setAttribute('rel', `${rel} noopener noreferrer`.trim());
+            addLog(`Säkrade extern länk #${index + 1} med rel="noopener noreferrer"`);
+          }
+        }
+      });
+
+      doc.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea').forEach((field, index) => {
+        const id = field.id;
+        const hasExplicitLabel = id && doc.querySelector(`label[for="${id}"]`);
+        const hasImplicitLabel = field.closest('label');
+        const hasAria = field.hasAttribute('aria-label') || field.hasAttribute('aria-labelledby');
+
+        if (!hasExplicitLabel && !hasImplicitLabel && !hasAria) {
+          const fallbackLabel = field.getAttribute('placeholder') || field.getAttribute('name') || `Inmatningsfält ${index + 1}`;
+          field.setAttribute('aria-label', fallbackLabel);
+          addLog(`Lade till aria-label="${fallbackLabel}" på formulärfält #${index + 1}`);
+        }
+      });
+
+      doc.querySelectorAll('nav').forEach((nav, index) => {
+        if (!nav.hasAttribute('aria-label') && !nav.hasAttribute('aria-labelledby')) {
+          nav.setAttribute('aria-label', index === 0 ? 'Huvudnavigering' : `Navigering ${index + 1}`);
+          addLog(`Lade till aria-label på <nav> #${index + 1}`);
+        }
+      });
+
+      doc.querySelectorAll('table').forEach((table, index) => {
+        if (!table.querySelector('caption') && !table.hasAttribute('aria-label')) {
+          table.setAttribute('aria-label', `Datatabell ${index + 1}`);
+          addLog(`Lade till aria-label på <table> #${index + 1}`);
+        }
+      });
+
+      let formatted = '';
+      if (isFullDocument) {
+        formatted = '<!DOCTYPE html>\n' + formatNode(doc.documentElement, 0);
+      } else {
+        Array.from(doc.body.childNodes).forEach(child => {
+          formatted += formatNode(child, 0);
+        });
+      }
+
+      formatted = formatted.replace(/\s+>/g, ' >');
+
+      return {
+        html: formatted.trim(),
+        logs: logs.length ? logs : [{ text: 'Inga WCAG-brister hittades som krävde automatisk ändring.', type: 'success' }]
+      };
+    };
+
+    const runProcess = () => {
+      const raw = inputEl.value.trim();
+      syncHighlight(inputEl, inputPre, inputCode);
+
+      if (!raw) {
+        statusBadge.textContent = 'Redo';
+        outputEl.value = '';
+        syncHighlight(outputEl, outputPre, outputCode);
+        previewFrame.srcdoc = '';
+        changelogEl.innerHTML = '<li>Väntar på HTML-kod att analysera...</li>';
+        return;
+      }
+
+      const result = optimizeWCAG(raw);
+      outputEl.value = result.html;
+      syncHighlight(outputEl, outputPre, outputCode);
+      previewFrame.srcdoc = result.html;
+      statusBadge.textContent = 'Optimerad';
+
+      changelogEl.innerHTML = '';
+      result.logs.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.text;
+        if (item.type === 'warning') {
+          li.className = 'warning';
+        }
+        changelogEl.appendChild(li);
+      });
+    };
+
+    const autoProcess = debounce(runProcess, 250);
+
+    inputEl.addEventListener('input', () => {
+      syncHighlight(inputEl, inputPre, inputCode);
+      statusBadge.textContent = 'Uppdaterar...';
+      autoProcess();
+    });
+
+    inputEl.addEventListener('scroll', () => {
+      inputPre.scrollTop = inputEl.scrollTop;
+      inputPre.scrollLeft = inputEl.scrollLeft;
+    });
+
+    outputEl.addEventListener('scroll', () => {
+      outputPre.scrollTop = outputEl.scrollTop;
+      outputPre.scrollLeft = outputEl.scrollLeft;
+    });
+
+    document.getElementById('processBtn').addEventListener('click', runProcess);
+
+    document.getElementById('sampleBtn').addEventListener('click', () => {
+      inputEl.value = sampleHTML;
+      runProcess();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      inputEl.value = '';
+      outputEl.value = '';
+      syncHighlight(inputEl, inputPre, inputCode);
+      syncHighlight(outputEl, outputPre, outputCode);
+      previewFrame.srcdoc = '';
+      statusBadge.textContent = 'Redo';
+      changelogEl.innerHTML = '<li>Väntar på HTML-kod att analysera...</li>';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      if (!outputEl.value) return;
+      await navigator.clipboard.writeText(outputEl.value);
+      const originalText = statusBadge.textContent;
+      statusBadge.textContent = 'Kopierad!';
+      setTimeout(() => {
+        statusBadge.textContent = originalText;
+      }, 2000);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      if (!outputEl.value) return;
+      const blob = new Blob([outputEl.value], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'wcag-optimerad.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files;
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        inputEl.value = event.target.result;
+        runProcess();
+      };
+      reader.readAsText(file);
+    });
+</script>
+</body>
+</html>
